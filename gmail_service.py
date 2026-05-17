@@ -1,39 +1,64 @@
 import smtplib
+import os
+
 from email.message import EmailMessage
+from dotenv import load_dotenv
 
-SENDER_EMAIL = "EMAIL"
-SENDER_PASSWORD = "linkedinautomated"
+load_dotenv()
 
-def send_email(receiver_email, subject, body, resume_path):
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
-    msg = EmailMessage()
+def send_email(receiver_email, subject, body, resume_path, cc_emails=None):
 
-    msg["Subject"] = subject
-    msg["From"] = SENDER_EMAIL
-    msg["To"] = receiver_email
+    try:
 
-    msg.set_content(body)
+        msg = EmailMessage()
 
-    # Attach resume
-    with open(resume_path, "rb") as file:
+        msg["Subject"] = subject
+        msg["From"] = SENDER_EMAIL
+        msg["To"] = receiver_email
 
-        file_data = file.read()
+        if cc_emails:
+            msg["Cc"] = ", ".join(cc_emails)
 
-        msg.add_attachment(
-            file_data,
-            maintype="application",
-            subtype="pdf",
-            filename="resume.pdf"
-        )
+        msg.set_content(body)
 
-    # Send email
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        with open(resume_path, "rb") as file:
 
-        smtp.login(
-            SENDER_EMAIL,
-            SENDER_PASSWORD
-        )
+            file_data = file.read()
 
-        smtp.send_message(msg)
+            msg.add_attachment(
+                file_data,
+                maintype="application",
+                subtype="pdf",
+                filename="resume.pdf"
+            )
 
-    print("Email sent to:", receiver_email)
+        #receipients list
+        all_recipients = [receiver_email]
+
+        if cc_emails:
+            all_recipients += cc_emails
+
+        #print("3. Connecting Gmail")
+        with smtplib.SMTP_SSL(
+            "smtp.gmail.com",
+             465
+        ) as smtp:
+
+            smtp.login(
+                SENDER_EMAIL,
+                SENDER_PASSWORD
+            )
+            #print("5. Sending email")
+            smtp.send_message(
+                msg,
+                to_addrs=all_recipients
+            )
+
+        print("6. Email sent successfully")
+
+    except Exception as e:
+
+        print("EMAIL ERROR:", e)
