@@ -1,7 +1,12 @@
 from playwright.sync_api import sync_playwright
 from urllib.parse import quote
 import os
+from dotenv import load_dotenv
+#import re
+load_dotenv()
 
+LINKEDIN_EMAIL = os.getenv("LINKEDIN_EMAIL")
+LINKEDIN_PASSWORD = os.getenv("LINKEDIN_PASSWORD")
 def search_jobs(keyword):
 
     jobs = []
@@ -15,8 +20,8 @@ def search_jobs(keyword):
         # Login
         page.goto("https://www.linkedin.com/login")
 
-        page.fill("#username", "LINKEDINUSERNAME")
-        page.fill("#password", "LINKEDINPASSWORD")
+        page.fill("#username", "LINKEDIN_EMAIL")
+        page.fill("#password", "LINKEDIN_PASSWORD")
 
         page.click("button[type='submit']")
 
